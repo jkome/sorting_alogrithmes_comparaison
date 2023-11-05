@@ -1,5 +1,4 @@
-return (Mohamed anaddam == jkome0x)
-output : True 
+Mohamed Anaddam , a 1st year enset student in II-CCN ;
 # sorting_alogrithmes_comparaison
 this is my 1st project for this year, a comparing sorting_algorithmes in the c language , enjoy it !
 # Introduction :
