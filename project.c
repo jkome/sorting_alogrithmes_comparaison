@@ -97,6 +97,33 @@ void saveTimingData(double data[][NUM_ALGORITHMS], int sizes[], int numSizes, co
 
     fclose(file);
 }
+// Function to apply Gaussian smoothing to an array
+void applyGaussianSmoothing(double* data, int size, double sigma) {
+    double* smoothedData = (double*)malloc(size * sizeof(double));
+
+    for (int i = 0; i < size; i++) {
+        double sum = 0.0;
+        double weightSum = 0.0;
+
+        for (int j = -3; j <= 3; j++) {
+            int index = i + j;
+            if (index >= 0 && index < size) {
+                double weight = exp(-(j * j) / (2.0 * sigma * sigma));
+                sum += data[index] * weight;
+                weightSum += weight;
+            }
+        }
+
+        smoothedData[i] = sum / weightSum;
+    }
+
+    // Copy smoothed data back to the original array
+    for (int i = 0; i < size; i++) {
+        data[i] = smoothedData[i];
+    }
+
+    free(smoothedData);
+}
 
 int main() {
     srand(time(NULL));
@@ -135,11 +162,20 @@ int main() {
         freeArray(arr);
     }
 
-    // Store the timing data in separate CSV files
-    saveTimingData(randomTimingData, sizes, sizeof(sizes) / sizeof(sizes[0]), "random_data.csv");
-    saveTimingData(bestCaseTimingData, sizes, sizeof(sizes) / sizeof(sizes[0]), "best_case_data.csv");
-    saveTimingData(worstCaseTimingData, sizes, sizeof(sizes) / sizeof(sizes[0]), "worst_case_data.csv");
-    saveTimingData(mixedCaseTimingData, sizes, sizeof(sizes) / sizeof(sizes[0]), "mixed_case_data.csv");
+    // Apply Gaussian smoothing to the timing data
+    double sigma = 1.0; // You can adjust the sigma value for desired smoothing
+    for (int i = 0; i < sizeof(sizes) / sizeof(sizes[0]); i++) {
+        applyGaussianSmoothing(randomTimingData[i], NUM_ALGORITHMS, sigma);
+        applyGaussianSmoothing(bestCaseTimingData[i], NUM_ALGORITHMS, sigma);
+        applyGaussianSmoothing(worstCaseTimingData[i], NUM_ALGORITHMS, sigma);
+        applyGaussianSmoothing(mixedCaseTimingData[i], NUM_ALGORITHMS, sigma);
+    }
+
+    // Store the smoothed timing data in separate CSV files
+    saveTimingData(randomTimingData, sizes, sizeof(sizes) / sizeof(sizes[0]), "smoothed_random_data.csv");
+    saveTimingData(bestCaseTimingData, sizes, sizeof(sizes) / sizeof(sizes[0]), "smoothed_best_case_data.csv");
+    saveTimingData(worstCaseTimingData, sizes, sizeof(sizes) / sizeof(sizes[0]), "smoothed_worst_case_data.csv");
+    saveTimingData(mixedCaseTimingData, sizes, sizeof(sizes) / sizeof(sizes[0]), "smoothed_mixed_case_data.csv");
 
     return 0;
 }
